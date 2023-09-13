@@ -1,31 +1,22 @@
+"use client"
 import Footer from "@/components/footer";
 import Header from "@/components/header";
-import { createContext } from "react";
-
+import { ActiveTabContext } from "@/src/Contexts";
+import { useState } from "react";
 
 export default function Home() {
-  let navigationState = {
-    activeTab: 0,
-    navigation: [
-      { name: 'Home', href: '/' },
-      { name: 'Promotion', href: '/promotion' },
-      { name: 'News', href: '/news' },
-      { name: 'Gallery', href: '/gallery' },
-    ]
-  };
 
-  const NavigationContext = createContext(navigationState);
-  
+  const [activeTabContext, setActiveTabContext] = useState(0);
   
   return (
-    <>
-      <NavigationContext.Provider value={navigationState}>
+    
+      <ActiveTabContext.Provider value={[activeTabContext, setActiveTabContext]}>
         <Header />
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
 
         </main>
         <Footer />
-      </NavigationContext.Provider>
-    </>
+      </ActiveTabContext.Provider>
+    
   );
 }
