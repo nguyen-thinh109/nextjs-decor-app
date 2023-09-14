@@ -1,3 +1,3 @@
 import { createContext } from "react";
 
-export const ActiveTabContext = createContext([0, '']);
+export const Context = createContext(null);
