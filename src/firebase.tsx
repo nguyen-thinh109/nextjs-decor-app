@@ -18,17 +18,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
-const signInWithGoogle = async () => {
-    try {
-      const res = await signInWithPopup(auth, googleProvider);
-      const user = res.user;
-      console.log(user)
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-export default signInWithGoogle

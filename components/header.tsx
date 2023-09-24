@@ -8,7 +8,8 @@ import Lottie from "lottie-react";
 import animation from "@/public/lotties/hot.json";
 import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi2";
-import signInWithGoogle from "@/src/firebase";
+import { auth, googleProvider } from "@/src/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 export default function Header() {
   const pathname = usePathname();
@@ -22,15 +23,18 @@ export default function Header() {
     return setIsLogin(isLoggedIn);
   }, []);
 
-  function handleLogin(): void {
-    signInWithGoogle();
-    // setIsLogin(!isSignin);
-    // if (isSignin) {
-    //   localStorage.setItem('isLoggedIn', '1');
-    // } else {
-    //   localStorage.removeItem('isLoggedIn');
-    // }
-  }
+  async function signInWithGoogle(){
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      const user = res.user;
+      console.log(user)
+      setAvatar(res.user.photoURL || '');
+      setIsLogin(!!(res.user.photoURL || ''));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   function handleLogOut(): void {
     setIsLogin(!isSignin);
@@ -39,7 +43,7 @@ export default function Header() {
   return (
     <>
       {/*tablet & desktop mode*/}
-      <div className="hidden md:block w-full px-4 px-10 py-6 flex items-center select-none">
+      <div className="hidden md:flex w-full px-4 px-10 py-6 items-center select-none">
         <div className="w-40 flex justify-center">
           <Image src="/logo/logo2.png" alt="logo" width={150} height={36} priority />
         </div>
@@ -57,10 +61,27 @@ export default function Header() {
           ))}
         </div>
 
-        <a href="/cart" className="relative w-40 flex justify-center block">
-          <div className="px-1.5 py-px rounded-full grid place-items-center text-xs bg-red-600 text-white absolute transform -translate-y-1/2 translate-x-1/2 z-30">0</div>
-          <Image src="/icons/cart.svg" alt="cart" className="" width={32} height={32} priority />
-        </a>
+        <div className="w-40 flex items-center justify-end">
+          <a href="/cart" className="relative w-8 flex justify-center block mr-4">
+            <div className="px-1.5 py-px rounded-full grid place-items-center text-xs bg-red-600 text-white absolute transform -translate-y-1/2 translate-x-1/2 z-30">0</div>
+            <Image src="/icons/cart.svg" alt="cart" className="" width={32} height={32} priority />
+          </a>
+
+          <div
+            onClick={() => {
+              setIsUserClicked(!isUserClicked);
+              setIsHamburgerClicked(false);
+              signInWithGoogle();
+            }}>
+            {avatar ? (
+              <div className="flex justify-center justify-center rounded-full overflow-hidden border-2 border-white border-solid">
+                <Image src={avatar} alt="logo" width={32} height={32} priority />
+              </div>
+            ) : (
+              <HiOutlineUserCircle style={{ width: 36, height: 36 }} />
+            )}
+          </div>
+        </div>
       </div>
 
       {/*mobile mode*/}
@@ -106,7 +127,7 @@ export default function Header() {
             </a>
           ))}
 
-          <div onClick={handleLogin} className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isHamburgerClicked ? "" : "-translate-x-full"}`}>
+          <div onClick={signInWithGoogle} className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isHamburgerClicked ? "" : "-translate-x-full"}`}>
             <div className="relative h-auto">
               <span className="text-lg">{isSignin ? "Đăng xuất" : "Đăng nhập"}</span>
               {isSignin ? (
@@ -136,10 +157,11 @@ export default function Header() {
             onClick={() => {
               setIsUserClicked(!isUserClicked);
               setIsHamburgerClicked(false);
+              signInWithGoogle();
             }}>
-            {isSignin ? (
+            {avatar ? (
               <div className="flex justify-center justify-center rounded-full overflow-hidden border-2 border-white border-solid">
-                <Image src="/images/cute-mini-strawberry-shortcake-pink.jpg" alt="logo" width={32} height={32} priority />
+                <Image src={avatar} alt="logo" width={32} height={32} priority />
               </div>
             ) : (
               <HiOutlineUserCircle style={{ width: 36, height: 36 }} />
@@ -158,7 +180,7 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <div className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isUserClicked ? "" : "translate-x-full"}`} onClick={handleLogin}>
+            <div className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isUserClicked ? "" : "translate-x-full"}`} onClick={signInWithGoogle}>
               <div className="relative h-auto">
                 <span className="text-lg">Đăng nhập</span>
                 <div className="absolute -left-8 top-0.5 z-10">
