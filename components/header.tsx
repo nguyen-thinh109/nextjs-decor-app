@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation';
 import { NavigationBarElements } from "@/src/GlobalConstants";
 import { useState, useEffect } from 'react';
 import Lottie from "lottie-react";
-import animation from "@/public/lotties/hot.json";
+import hotSaleAnimation from "@/public/lotties/hot.json";
+import firework from "@/public/lotties/firework.json";
 import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { auth, googleProvider } from "@/src/firebase";
 import { signInWithPopup } from "firebase/auth";
+import { setTimeout } from "timers/promises";
 
 export default function Header() {
   const pathname = usePathname();
@@ -17,19 +19,28 @@ export default function Header() {
   const [isUserClicked, setIsUserClicked] = useState(false);
   const [isSignin, setIsLogin] = useState(false);
   const [avatar, setAvatar] = useState('');
-  
-  useEffect(()=>{
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
     let isLoggedIn = !!localStorage.getItem('isLoggedIn');
     return setIsLogin(isLoggedIn);
   }, []);
 
-  async function signInWithGoogle(){
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsUserClicked(!isUserClicked)
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [isUserClicked]);
+
+  async function signInWithGoogle() {
     try {
       const res = await signInWithPopup(auth, googleProvider);
       const user = res.user;
       console.log(user)
       setAvatar(res.user.photoURL || '');
       setIsLogin(!!(res.user.photoURL || ''));
+      setUsername(res.user.displayName || '');
     } catch (err) {
       console.error(err);
     }
@@ -38,6 +49,11 @@ export default function Header() {
 
   function handleLogOut(): void {
     setIsLogin(!isSignin);
+    setAvatar('');
+    setUsername('');
+
+    // setTimeout( setIsUserClicked(!isUserClicked) , 2000)
+    setTimeout
   }
 
   return (
@@ -75,7 +91,9 @@ export default function Header() {
             }}>
             {avatar ? (
               <div className="flex justify-center justify-center rounded-full overflow-hidden border-2 border-white border-solid">
-                <Image src={avatar} alt="logo" width={32} height={32} priority />
+                <div className="">
+                  <Image src={avatar} alt="logo" width={32} height={32} priority />
+                </div>
               </div>
             ) : (
               <HiOutlineUserCircle style={{ width: 36, height: 36 }} />
@@ -97,9 +115,8 @@ export default function Header() {
             <div
               className={`bg-black h-0.5 w-8 rounded transform origin-center transition-all ease-in-out duration-700 absolute translate-middle ${isHamburgerClicked ? "rotate-45" : "rotate-0"}`}></div>
             <div
-              className={`bg-black h-0.5 w-8 rounded transform origin-center transition-all ease-in-out duration-700 absolute translate-middle ${
-                isHamburgerClicked ? "-rotate-45" : "rotate-0"
-              }`}></div>
+              className={`bg-black h-0.5 w-8 rounded transform origin-center transition-all ease-in-out duration-700 absolute translate-middle ${isHamburgerClicked ? "-rotate-45" : "rotate-0"
+                }`}></div>
             <div className={`bg-black h-0.5 w-8 rounded transition ease-in-out duration-700 absolute bottom-[8px] ${isHamburgerClicked ? "translate-x-full" : ""}`}></div>
           </div>
           <div className="ml-2 w-10"></div>
@@ -109,15 +126,14 @@ export default function Header() {
           {NavigationBarElements.map((item: NavigationDetails, index: number) => (
             <a key={index} href={item.href}>
               <div
-                className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${pathname === item.href && "font-bold"} ${
-                  isHamburgerClicked ? "" : "-translate-x-full"
-                }`}>
+                className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${pathname === item.href && "font-bold"} ${isHamburgerClicked ? "" : "-translate-x-full"
+                  }`}>
                 <div className="relative h-auto">
                   <span className="text-lg">{item.name}</span>
                   {index == 1 ? (
                     <div className="absolute -right-12 -top-3 z-10">
                       {" "}
-                      <Lottie animationData={animation} style={{ width: 54, height: 54 }} />
+                      <Lottie animationData={hotSaleAnimation} style={{ width: 54, height: 54 }} />
                     </div>
                   ) : (
                     <></>
@@ -157,11 +173,12 @@ export default function Header() {
             onClick={() => {
               setIsUserClicked(!isUserClicked);
               setIsHamburgerClicked(false);
-              signInWithGoogle();
             }}>
             {avatar ? (
-              <div className="flex justify-center justify-center rounded-full overflow-hidden border-2 border-white border-solid">
-                <Image src={avatar} alt="logo" width={32} height={32} priority />
+              <div className="flex justify-center justify-center rounded-full overflow-hidden border-2 border-white border-solid relative">
+                <div className="">
+                  <Image src={avatar} alt="logo" width={32} height={32} priority />
+                </div>
               </div>
             ) : (
               <HiOutlineUserCircle style={{ width: 36, height: 36 }} />
@@ -169,14 +186,13 @@ export default function Header() {
           </div>
         </div>
 
-        <div className={`w-full bg-white absolute z-50 left-0 bottom-0 translate-y-full rounded-xl transition ease-in-out duration-300 ${isUserClicked ? "" : "translate-x-full"}`}>
+        <div className={`w-full bg-white absolute z-50 left-0 bottom-0 translate-y-full rounded-xl transition-all ease-in-out duration-300 ${isUserClicked ? "" : "translate-x-full"}`}>
           {isSignin ? (
-            <div className={`flex items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isUserClicked ? "" : "translate-x-full"}`} onClick={handleLogOut}>
-              <div className="relative h-auto">
+            <div className={`flex flex-col items-center justify-center w-full px-4 py-6 transition-all ease-in-out duration-1000 ${isUserClicked ? "" : "translate-x-full"}`} onClick={handleLogOut}>
+              {username && <p className="text-center text-lg mb-3">Xin chào, <span className="font-medium">{username}</span> </p>}
+              <div className="flex gap-2">
                 <span className="text-lg">Đăng xuất</span>
-                <div className="absolute -right-8 top-0.5 z-10">
-                  <AiOutlineLogout style={{ width: 24, height: 24 }} />
-                </div>
+                <AiOutlineLogout style={{ width: 24, height: 24 }} />
               </div>
             </div>
           ) : (
